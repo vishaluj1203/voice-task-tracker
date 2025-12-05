@@ -1,37 +1,63 @@
-import { useState, useEffect, useMemo } from 'react';
-import { X, Calendar, AlertCircle, Type, AlignLeft, Flag, CheckCircle2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { X, Calendar, AlertCircle, Type, AlignLeft, Flag, CheckCircle2, Clock } from 'lucide-react';
 import { TASK_STATUS, TASK_PRIORITY } from '../constants/tasks';
 
 const TaskModal = ({ isOpen, onClose, onSave, initialData, isReview }) => {
-    const initialFormData = useMemo(() => ({
-        title: initialData?.title || '',
-        description: initialData?.description || '',
-        status: initialData?.status || TASK_STATUS.TODO,
-        priority: initialData?.priority || TASK_PRIORITY.MEDIUM,
-        dueDate: initialData?.dueDate ? format(new Date(initialData.dueDate), 'yyyy-MM-dd') : ''
-    }), [initialData]);
-
-    const [formData, setFormData] = useState(initialFormData);
-
-    // Sync form data when modal opens with new initial data
-    // This is intentional - we need to reset form when modal opens with new data
-    useEffect(() => {
-        if (isOpen) {
-            // eslint-disable-next-line react-hooks/set-state-in-effect
-            setFormData(initialFormData);
+    const getInitialFormData = (data) => {
+        if (!data) {
+            return {
+                title: '',
+                description: '',
+                status: TASK_STATUS.TODO,
+                priority: TASK_PRIORITY.MEDIUM,
+                dueDate: ''
+            };
         }
-    }, [isOpen, initialFormData]);
+
+        let dateStr = '';
+        if (data.dueDate) {
+            const date = new Date(data.dueDate);
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            dateStr = `${year}-${month}-${day}`;
+        }
+
+        return {
+            title: data.title || '',
+            description: data.description || '',
+            status: data.status || TASK_STATUS.TODO,
+            priority: data.priority || TASK_PRIORITY.MEDIUM,
+            dueDate: dateStr
+        };
+    };
+
+    const [formData, setFormData] = useState(() => getInitialFormData(initialData));
+
+
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Clean up the data before saving - convert empty strings to null
+
+        let finalDate = null;
+        if (formData.dueDate) {
+            const [year, month, day] = formData.dueDate.split('-').map(Number);
+
+            // Create UTC date at midnight
+            const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+
+            finalDate = date.toISOString();
+        }
+
         const cleanedData = {
             ...formData,
-            dueDate: formData.dueDate && formData.dueDate.trim() !== '' ? formData.dueDate : null
+            dueDate: finalDate
         };
+        // Remove temporary dueTime field
+        // delete cleanedData.dueTime; // No longer needed as dueTime is removed
+
         onSave(cleanedData);
     };
 

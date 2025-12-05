@@ -302,7 +302,7 @@ POST /parse-task
 **Request Body**:
 ```json
 {
-  "text": "Buy groceries tomorrow at 5 pm high priority"
+  "text": "Buy groceries tomorrow high priority"
 }
 ```
 
@@ -311,7 +311,7 @@ POST /parse-task
 {
   "title": "Buy groceries",
   "priority": "HIGH",
-  "dueDate": "2024-12-05T17:00:00.000Z",
+  "dueDate": "2024-12-05T00:00:00.000Z",
   "status": "TODO"
 }
 ```
@@ -351,7 +351,7 @@ POST /parse-task
 4. **Natural Language Parsing**
    - Built a custom parser instead of using an AI API
    - Keeps the app fast, free, and works offline
-   - Supports common patterns: "tomorrow", "next Monday", "5 pm", "high priority"
+   - Supports common patterns: "tomorrow", "next Monday", "high priority"
 
 5. **SQLite Database**
    - Simple setup, no external database server required
@@ -371,7 +371,6 @@ POST /parse-task
 1. **Voice Input Formats**
    - Users speak in natural English
    - Common time references: "tomorrow", "today", "next Monday", "next Friday"
-   - Time formats: "5 pm", "6:30 am", "evening", "morning", "afternoon"
    - Priority keywords: "urgent", "high priority", "low priority"
 
 2. **Browser Compatibility**
@@ -413,7 +412,6 @@ I built this application with the assistance of **Google Gemini (Antigravity)** 
 3. **Natural Language Parser**
    - Designed the parsing logic for voice input
    - Implemented date extraction using date-fns
-   - Added support for time parsing (AM/PM, evening, morning)
 
 4. **Debugging**
    - Fixed date persistence bug (empty strings vs null)

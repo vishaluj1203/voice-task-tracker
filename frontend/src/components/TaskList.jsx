@@ -50,7 +50,13 @@ const TaskList = ({ tasks, onEdit, onDelete }) => {
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-600">
-                                {task.dueDate ? format(new Date(task.dueDate), 'MMM d, yyyy') : '-'}
+                                {task.dueDate ? (() => {
+                                    // Parse "YYYY-MM-DD..." directly to avoid timezone issues
+                                    const dateStr = task.dueDate.split('T')[0];
+                                    const [year, month, day] = dateStr.split('-');
+                                    const date = new Date(year, month - 1, day);
+                                    return format(date, 'MMM d, yyyy');
+                                })() : '-'}
                             </td>
                             <td className="px-6 py-4 text-right">
                                 <div className="flex justify-end gap-2">

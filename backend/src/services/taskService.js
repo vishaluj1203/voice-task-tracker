@@ -13,10 +13,12 @@ const getTasks = async (filters = {}) => {
     }
 
     if (dueDate) {
-        const start = new Date(dueDate);
-        start.setHours(0, 0, 0, 0);
-        const end = new Date(dueDate);
-        end.setHours(23, 59, 59, 999);
+        // Manually parse YYYY-MM-DD to ensure strict UTC construction
+        // This avoids any ambiguity with how new Date(string) is parsed
+        const [year, month, day] = dueDate.split('-').map(Number);
+
+        const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+        const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999));
 
         where.dueDate = {
             gte: start,
@@ -51,16 +53,22 @@ const createTask = async (data) => {
 };
 
 const updateTask = async (id, data) => {
-    const { title, description, status, priority, dueDate } = data;
+    console.log(`[AUDIT] updateTask called for ID ${id} at ${new Date().toISOString()}`);
+    console.log(`[AUDIT] updateTask payload:`, JSON.stringify(data, null, 2));
+
+    // If we are updating dueDate, ensure we use the same manual parsing logic
+    // to prevent timezone shifts if it's passed as a string
+    let updateData = { ...data };
+
+    if (updateData.dueDate && typeof updateData.dueDate === 'string') {
+        const [year, month, day] = updateData.dueDate.split('T')[0].split('-').map(Number);
+        // Set to UTC midnight
+        updateData.dueDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+    }
+
     return await prisma.task.update({
         where: { id: parseInt(id) },
-        data: {
-            title,
-            description,
-            status,
-            priority,
-            dueDate: dueDate && dueDate !== '' && dueDate !== 'null' ? new Date(dueDate) : null
-        }
+        data: updateData
     });
 };
 

@@ -213,7 +213,12 @@ const cleanTitle = (text) => {
  */
 const parseTask = (text) => {
     const lowerText = text.toLowerCase();
-    const today = new Date();
+
+    // Adjust 'today' to IST (UTC+5:30) because the server is in UTC
+    // and the user is in India. Without this, late night in India (early morning UTC)
+    // causes "tomorrow" to be calculated from the previous day.
+    const now = new Date();
+    const today = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
 
     // Extract components
     const priority = extractPriority(lowerText);
@@ -228,7 +233,12 @@ const parseTask = (text) => {
     // Extract time if we have a date
     let dueDate = null;
     if (parsedDate) {
-        dueDate = extractTime(lowerText, parsedDate);
+        dueDate = new Date(Date.UTC(
+            parsedDate.getFullYear(),
+            parsedDate.getMonth(),
+            parsedDate.getDate(),
+            0, 0, 0
+        ));
     }
 
     // Clean up title

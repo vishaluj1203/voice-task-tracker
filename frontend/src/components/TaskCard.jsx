@@ -42,7 +42,13 @@ const TaskCard = ({ task, index, onClick }) => {
                         {task.dueDate && (
                             <div className="flex items-center mr-3">
                                 <Calendar size={12} className="mr-1" />
-                                <span>{format(new Date(task.dueDate), 'MMM d')}</span>
+                                <span>{(() => {
+                                    // Parse "YYYY-MM-DD..." directly to avoid timezone issues
+                                    const dateStr = task.dueDate.split('T')[0];
+                                    const [year, month, day] = dateStr.split('-');
+                                    const date = new Date(year, month - 1, day);
+                                    return format(date, 'MMM d');
+                                })()}</span>
                             </div>
                         )}
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${task.status === TASK_STATUS.DONE ? 'bg-green-100 text-green-700' :
