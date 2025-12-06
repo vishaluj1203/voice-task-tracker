@@ -2,37 +2,43 @@ import { useState, useEffect } from 'react';
 import { X, Calendar, AlertCircle, Type, AlignLeft, Flag, CheckCircle2, Clock } from 'lucide-react';
 import { TASK_STATUS, TASK_PRIORITY } from '../constants/tasks';
 
-const TaskModal = ({ isOpen, onClose, onSave, initialData, isReview }) => {
-    const getInitialFormData = (data) => {
-        if (!data) {
-            return {
-                title: '',
-                description: '',
-                status: TASK_STATUS.TODO,
-                priority: TASK_PRIORITY.MEDIUM,
-                dueDate: ''
-            };
-        }
-
-        let dateStr = '';
-        if (data.dueDate) {
-            const date = new Date(data.dueDate);
-            const year = date.getUTCFullYear();
-            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-            const day = String(date.getUTCDate()).padStart(2, '0');
-            dateStr = `${year}-${month}-${day}`;
-        }
-
+const getInitialFormData = (data) => {
+    if (!data) {
         return {
-            title: data.title || '',
-            description: data.description || '',
-            status: data.status || TASK_STATUS.TODO,
-            priority: data.priority || TASK_PRIORITY.MEDIUM,
-            dueDate: dateStr
+            title: '',
+            description: '',
+            status: TASK_STATUS.TODO,
+            priority: TASK_PRIORITY.MEDIUM,
+            dueDate: ''
         };
-    };
+    }
 
+    let dateStr = '';
+    if (data.dueDate) {
+        const date = new Date(data.dueDate);
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        dateStr = `${year}-${month}-${day}`;
+    }
+
+    return {
+        title: data.title || '',
+        description: data.description || '',
+        status: data.status || TASK_STATUS.TODO,
+        priority: data.priority || TASK_PRIORITY.MEDIUM,
+        dueDate: dateStr
+    };
+};
+
+const TaskModal = ({ isOpen, onClose, onSave, initialData, isReview }) => {
     const [formData, setFormData] = useState(() => getInitialFormData(initialData));
+
+    useEffect(() => {
+        if (isOpen) {
+            setFormData(getInitialFormData(initialData));
+        }
+    }, [isOpen, initialData]);
 
 
 
@@ -43,6 +49,7 @@ const TaskModal = ({ isOpen, onClose, onSave, initialData, isReview }) => {
 
         let finalDate = null;
         if (formData.dueDate) {
+            // Construct date using UTC components to match the "Fake UTC" strategy
             const [year, month, day] = formData.dueDate.split('-').map(Number);
 
             // Create UTC date at midnight
